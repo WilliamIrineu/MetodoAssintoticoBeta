@@ -1,5 +1,6 @@
-# MetodoAssintoticoBeta
+# MetodoAssintoticoBeta ( http://rpubs.com/WilliamIrineu/ICMonteCarlo )
 IC USANDO MONTE CARLO DA MATERIA DE ESTATÍSTICA COMPUTACIONAL, CALCULANDO INTERVALO DE CONFIANÇA ASSINTOTICO PARA DISTRIBUIÇÃO BETA
+trazendo todas as referencias bibliograficas utilizados
 
 Onde baixando todos os arquivos e rodando o RMD, ele vai puxar os prints 1 e 2 para gerar um dock
 afim de organizar bem a resolução do exercicio:
@@ -11,3 +12,5 @@ Considere 1.000 repetições de geração, construção do intervalo de confian�
 
 Aula 17: Método Monte Carlo em Inferência - Intervalo de
 Confiança
+
+Também se encontra aqui o html publicado que traz toda a resolução : http://rpubs.com/WilliamIrineu/ICMonteCarlo
