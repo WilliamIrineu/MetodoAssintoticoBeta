@@ -1,0 +1,181 @@
+---
+title: "aula 17 exercicio beta"
+author: "WILLIAM IRINEU"
+date: "2023-07-06"
+output:
+  html_document: default
+  word_document: default
+---
+---
+title: "Untitled"
+author: "WILLIAM IRINEU"
+date: "2023-06-07"
+output:
+  html_document: default
+  word_document: default
+---
+
+---
+title: "Exercício Aula 17 - Método Monte Carlo em Inferência - Intervalo de Confiança "
+author: "WILLIAM IRINEU ALVES DE LIMA"
+date: "05/07/2023"
+header-includes:
+  - \usepackage{titling}
+  - \pretitle{\begin{center}
+    \includegraphics[width=2in,height=2in]{ufsj.png}\LARGE\\}
+  - \posttitle{\end{center}}
+toc-title: "Sumário"
+output:
+  bookdown::html_document2: 
+    theme: journal
+    highlight: tango
+    toc: yes
+    number_sections: yes
+    includes:
+      in_header: logo.html
+  pdf_document:
+    
+    toc: yes
+    number_sections: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+------------------------------------------------------------------------
+
+## Objetivo
+
+Considerando amostras de tamanho 10, 20, 30, 50 e 100, realizar o estudo de Monte Carlos considerando o intervalo de confiança assintótico e amostras das distribuições:
+
+D. Beta(α = 2, β = 2) - construir os ICs para α e β.
+
+Considere 1.000 repetições de geração, construção do intervalo de confiança e verificação.
+
+**Obs.:** nos exemplos anteriores, os intervalos de confiança adotados são oriundos de quantidades pivotais conhecidas. No entanto, na grande maioria das apliações utiliza-se resultados assintóticos para a obtenção dos intervalos. No entanto, nesse cenário os resultados são verificados para "n grande' ', mas em geral não conhecemos o valor do n. Assim, um estudo de simulação para verificar o tamanho amostral adequado se faz necessário. O intervalo de confiança assintótico para uma parâmetro θ é dado por:
+
+$( \hat{\theta} - \frac{{z_{1-\alpha/2} \quad \hat{\sigma}_{\theta}}}{{\sqrt{n}}} ), (\hat{\theta} + \frac{{z_{1-\alpha/2} \quad \hat{\sigma}_{\theta}}}{{\sqrt{n}}})$
+
+Precisamos do $\hat{\sigma}_{\theta}$ e do $\hat{\theta}$ para isso vamos usar a matriz hessiana e precisamos dos valores de α e β estimados. Para isso temos o seguinte resultado:
+
+A)  Utilizando a função Log-Vero e a função optim traz os valores estimados e a matriz hessiana
+
+B)  Para o parâmetro α temos que pegar o [1,1] da matriz hessiana e [2,2] para o parâmetro β da matriz hessiana.
+
+C)  Seja (X1, X2, ..., Xn) uma amostra aleatória simples da distribuição Beta(a, b). Temos o vetor de parâmetros populacionais desconhecidos θ = (a, b). A densidade da distribuição Beta é da forma:
+
+
+```{r echo=FALSE,out.width="100%"}
+
+knitr::include_graphics("print1.png",error = FALSE)
+
+```
+
+#### Resolução em R:
+
+Podemos dar continuidade na resolução do problema utilizando os resultados acima:
+
+## Exemplo considerando 1000 repetições:
+
+## 
+
+```{r}
+rm(list = ls())
+set.seed(2023) # Definir semente para reprodutibilidade
+# Definir semente para reprodutibilidade
+
+# pacote a ser carregado
+library(numDeriv)
+
+# Função de log-verossimilhança
+log_vero <- function(p0) {
+      alpha <- p0[1]
+      betaa <- p0[2]
+      n_ <- n[j]
+      B <- gamma(alpha) * gamma(betaa) / gamma(alpha + betaa)
+    aux <- -(
+    -n_*log(B)+
+    (alpha-1)*sum(log(x))+
+    (betaa-1)*sum(log(1-x))
+          )
+  return(aux)
+    
+} 
+
+n <- c(10, 20, 30, 50, 100) # Tamanhos das colunas
+rep_ <- 1000 # Número de repetições
+alfa <- 2
+betaa <- 2
+chute=c(1.9,2.1)
+Alfaconfiança=0.05 #1-alfaconfiança=0.99%
+
+# Vetores para armazenar as estimativas dos parâmetros
+estimativas_alpha <- matrix(0, nrow = rep_, ncol = length(n)) #adicionando o emv de tamanho 200 na primeira coluna e o rep_ na linha
+estimativas_beta <- matrix(0, nrow = rep_, ncol = length(n))
+j=i=1    
+for (j in 1:length(n)) {
+  
+# Calcular limites usando a Hessiana do optim
+limites_alpha <- matrix(0, nrow = rep_, ncol = 2)
+limites_beta <- matrix(0, nrow = rep_, ncol = 2)
+
+
+for (i in 1:rep_) {
+  
+# Gerar matriz da distribuição beta, matriz coluna, sendo 1 linha com rep_ colunas
+x <- matrix(rbeta(n[j], alfa, betaa), ncol = n[j])
+
+# Estimar os parâmetros alpha e beta usando a função optim
+    resultado <- optim(par = chute, fn = log_vero)
+
+    estimativas_alpha[i, j] <- resultado$par[1]
+    estimativas_beta[i, j] <- resultado$par[2]
+
+    # a matriz hessian
+    Hessiana=solve(hessian(log_vero, x=chute))
+
+    desvio_padrao_alpha <- sqrt(Hessiana[1, 1])
+    desvio_padrao_beta <- sqrt(Hessiana[2, 2])
+    
+    limites_alpha[i, ] <- c(estimativas_alpha[i, j] - qnorm(1-Alfaconfiança/2) * desvio_padrao_alpha,
+                            estimativas_alpha[i, j] + qnorm(1-Alfaconfiança/2) * desvio_padrao_alpha )
+    
+    limites_beta[i, ] <- c(estimativas_beta[i, j]- qnorm(1-Alfaconfiança/2) * desvio_padrao_beta ,
+                        estimativas_beta[i, j] + qnorm(1-Alfaconfiança/2) * desvio_padrao_beta )
+
+    
+}
+# Imprimir as estimativas dos parâmetros alpha e beta para cada tamanho de coluna
+  cat("Tamanho da amostra:", n[j], "\n")
+  
+  #Informações sobre Alfa
+  cat("Limites Alpha:", limites_alpha[j, ], "\n")
+  prob_alpha <- sum(limites_alpha[,1]<2 & limites_alpha[,2]>2)/rep_ #limites_alpha[,1] sign limites inf e limites_alpha[,2] superiores
+  cat("Probabilidade de parametro alfa =",prob_alpha,"\n\n")
+  
+  #Informações sobre Beta
+  cat("Limites Beta:", limites_beta[j, ], "\n")
+  prob_beta <- sum(limites_beta[,1]<2 & limites_beta[,2]>2)/rep_ #limites_alpha[,1] sign limites inf e limites_alpha[,2] superiores
+  cat("Probabilidade de parametro beta =",prob_beta,"\n\n\n")
+
+}
+
+
+```
+
+## Links Referenciais:
+
+Tese IME-USP com orientador Heleno Bolfarine : [Métodos de Monte Carlo em Análise deSobrevivência](https://teses.usp.br/teses/disponiveis/45/45133/tde-20210729-023455/publico/CanchoVicenteGaribay.pdf)
+
+Tese ICE-UNB com orientador Peter Zörnig : [Estimadores de Máxima Verossimilhança: Casos que não satisfazem as condições de regularidade.](https://bdm.unb.br/bitstream/10483/24425/1/2018_WellingtonBernardoDeSousa_tcc.pdf)
+
+## Bibliografia:
+
+1 - RIZZO, M. Statistical Computing with R. Chapman amp; Hall, New York, 2007.
+
+2 - EFRON, B; TIBSHIRANI, R. F. An Introdution to the Bootstrap. Chapman Hall, 1993.
+
+3 - Morettin, A. Pedro; Singer M. Julio, JulEstatística e Ciência de Dados;Brazil,2022
+
+![](print2.PNG){width="717"}
